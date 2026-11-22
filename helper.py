@@ -2,7 +2,7 @@
 # Source Name: Ultra Self Creator
 # Source Version: 1.4.3
 # Channel: Fadelta_source
-# TiTaN Digital Card Integrated
+# TiTaN Digital Card + Dark Pulse Structure Integration
 #================== Import ==================#
 from pyrogram import Client, filters, idle, errors
 from pyrogram.types import *
@@ -19,17 +19,17 @@ from pathlib import Path
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-#================= Config =================#
-owner = 0  # Owner ID - مقدار عددی واقعی راDecision بگذارید
-api_id = 0  # API ID
-api_hash = "0" # API HASH
-bot_token = "0" # Bot Token
-DBName = "0" # Database Name
-DBUser = "0" # Database User
-DBPass = "0" # Database Password
+#================= Dark Pulse Config =================#
+owner = 0          # ایدی عددی مدیر (مقدار واقعی قرار دهید)
+api_id = 0         # API ID
+api_hash = "0"     # API HASH
+bot_token = "0"    # توکن ربات کمکی/هلپر
+DBName = "0"       # نام دیتابیس
+DBUser = "0"       # کاربر دیتابیس
+DBPass = "0"       # رمز دیتابیس
 #==========================================#
 
-# ================= TITAN Digital Card Assets =================#
+#================= TiTaN Digital Card Assets =================#
 BASE_DIR = Path(__file__).resolve().parent
 TITAN_SOURCE_DIR = BASE_DIR / "source"
 TITAN_ASSETS_DIR = TITAN_SOURCE_DIR / "assets"
@@ -39,7 +39,7 @@ TITAN_TEMPLATE_PATH = None
 TITAN_FONT_PATHS = {}
 
 def _titan_find_template():
-    """Find the Titan card template image."""
+    """Find the Titan card template image (Dark Pulse structure, Titan asset)."""
     preferred = (
         "titan_card_template.png",
         "titan_card_template.jpg",
@@ -49,7 +49,6 @@ def _titan_find_template():
         candidate = TITAN_ASSETS_DIR / name
         if candidate.is_file():
             return candidate
-    # fallback: any image in assets
     if TITAN_ASSETS_DIR.is_dir():
         image_files = sorted(
             p for p in TITAN_ASSETS_DIR.iterdir()
@@ -100,7 +99,6 @@ def _titan_load_fonts():
     return fonts
 
 TITAN_NATIVE_SIZE = (1280, 853)
-TITAN_PROFILE_AREA = (98, 149, 418, 469)
 TITAN_PROFILE_POLYGON = (
     (104, 228), (185, 149), (329, 149), (412, 229),
     (412, 389), (329, 469), (185, 469), (104, 389),
@@ -332,7 +330,6 @@ def generate_titan_user_card(user, profile_photo=None):
         _titan_load_fonts()
     template_path = _titan_find_template()
     if template_path is None:
-        # Return a simple colored image if no template
         image = Image.new("RGB", TITAN_NATIVE_SIZE, (6, 12, 25))
         output = BytesIO()
         output.name = "titan_user_identity_card.png"
@@ -381,15 +378,14 @@ def generate_titan_user_card(user, profile_photo=None):
     output.seek(0)
     return output
 
-# ================= Cache for cards =================#
-_titan_card_cache = {}
+#================= TiTaN Card Cache =================#
+_titan_card_cache_dir = BASE_DIR / "panel_cache" / "cards"
+_titan_card_cache_dir.mkdir(parents=True, exist_ok=True)
 
 async def render_titan_user_card_cached(client, user):
     """Return a cached PNG file path for this user's current card."""
-    cache_dir = BASE_DIR / "panel_cache" / "cards"
-    cache_dir.mkdir(parents=True, exist_ok=True)
     uid = getattr(user, "id", 0)
-    cache_path = cache_dir / f"titan_{uid}.png"
+    cache_path = _titan_card_cache_dir / f"titan_{uid}.png"
     if cache_path.is_file():
         return str(cache_path)
     profile_photo = await get_titan_profile_photo(client, user.id, user)
@@ -397,7 +393,7 @@ async def render_titan_user_card_cached(client, user):
     cache_path.write_bytes(titan_card.getvalue())
     return str(cache_path)
 
-#================= DB Functions =================#
+#================= Dark Pulse DB Functions =================#
 def get_data(query):
      with pymysql.connect(host="localhost", database=DBName, user=DBUser, password=DBPass, cursorclass=pymysql.cursors.DictCursor) as connect:
           db = connect.cursor()
@@ -418,7 +414,7 @@ def update_data(query):
           db.execute(query)
           connect.commit()
 
-#================= Tables =================#
+#================= Dark Pulse Tables =================#
 update_data("""
 CREATE TABLE IF NOT EXISTS user(
 id bigint PRIMARY KEY,
@@ -446,8 +442,8 @@ if AdminUser is None:
 
 app = Client("Helper", api_id, api_hash, bot_token=bot_token)
 
-#================= Help Texts (Dark Pulse) =================#
-
+#================= TiTaN Help Texts (All 24 Sections) =================#
+# (Persian and English help texts for all Titan sections)
 fahelp1 = """
 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 **[ سراسری - شخصی ]**
@@ -1338,7 +1334,7 @@ fahelp18 = """
 تقلب در بسکتبال
 ➤ [ `.basketball` ]
 ———————————————
-تقلب در فوتبال
+تCancel در فوتبال
 ➤ [ `.football` ] **⤳** (1 OR 6)
 1: Fail
 4: Goal
@@ -1416,134 +1412,6 @@ fahelp18 = """
 ———————————————
 ➤ [ `.hmm` ]
 ———————————————
-"""
-
-saeed1 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-                                                   **[ بخش مدیریت ]**
-                                                   \n ———————————————
-➤ [ حذف سکوت ]
-——————————————— \n———————————————
-➤ [ تنظیم سکوت ]
-——————————————— \n———————————————
-➤ [ پاکسازی ممبر ]
-——————————————— \n———————————————
-➤ [ سشن ]
-——————————————— \n———————————————
-➤ [.]
-——————————————— \n▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-
-"""
-
-saeed2 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-                                                   **[ پنل ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-———————————————
-➤ [  پنل]
-———————————————   \n———————————————
-➤ [ راهنما ]
-——————————————— \n———————————————
-➤ [ سلف ]
-——————————————— \n———————————————
-➤ [ پینگ ]
-——————————————— \n———————————————
-➤ [  ان مورس]
-——————————————— \n———————————————
-➤ [ مورس ]
-———————————————
-
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-
-"""
-
-saeed5 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n          \n   **[ بخش پاسخگویی ]**\n   \n ———————————————
-➤ [  پاسخگویی روشن]
-——————————————— \n———————————————
-➤ [  پاسخگویی خاموش]
-——————————————— \n———————————————
-➤ [  افزودن پاسخ]
-——————————————— \n———————————————
-➤ [  سکوت]
-——————————————— \n———————————————
-➤ [  حذف سکوت]
-——————————————— \n———————————————
-➤ [ تنظیم خوشامد ]
-——————————————— \n———————————————
-➤ [ حالت اروم ]
-————————————\n———————————————
-➤ [ حذف کل ]
-——————————————— \n———————————————
-➤ [ ساخت کانال ]
-——————————————— \n———————————————
-➤ [ ساخت گروه ]
-——————————————— \n———————————————
-➤ [ تنظیم یوزر نیم گروه ]
-——————————————— \n———————————————
-➤ [ حذف همه پین ]
-——————————————— \n———————————————
-➤ [ حذف پین ]
-——————————————— \n———————————————
-➤ [ پین ]
-——————————————— \n———————————————
-➤ [ تنظیم بیو گروه ]
-——————————————— \n———————————————
-➤ [ تنظیم نام گروه ]
-——————————————— \n———————————————
-➤ [ حذف پروفایل گروه ]
-——————————————— \n———————————————
-➤ [ حذف پروفایل ]
-——————————————— \n———————————————
-➤ [ تنظیم پروفایل ]
-——————————————— \n———————————————
-➤ [ تنظیم پروفایل گروه ]
-———————————————
-
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-
-"""
-
-saeed6 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n                                                   **[ بخش کامنت و اسپم ]**\n                                                   \n                                                   \n———————————————
-➤ [ تنظیم کامنت اول ]
-———————————————    \n———————————————
-➤ [ ادیت اسپم ]
-——————————————— \n———————————————
-➤ [ اسپم ]
-——————————————— \n———————————————
-➤ [ کد ملی ]
-———————————————
-
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-
-"""
-
-saeed16 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n                                                   **[نرخ ارز ها و سرگرمی فارسی]**\n———————————————
-➤ [ نرخ ارز ]
-———————————————                                                    \n ———————————————
-➤ [  استخاره]
-———————————————   \n———————————————
-➤ [ فال ]
-——————————————— \n———————————————
-➤ [ اسم رندوم ]
-——————————————— \n———————————————
-➤ [ کارت ]
-——————————————— \n———————————————
-➤ [ دیالوگ ]
-——————————————— \n———————————————
-➤ [ داستان ]
-——————————————— \n———————————————
-➤ [ حدیث ]
-——————————————— \n———————————————
-➤ [ الکی ]
-——————————————— \n———————————————
-➤ [ خاطره ]
-——————————————— \n———————————————
-➤ [ پخت و پز ]
-———————————————\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-
 """
 
 fahelp19 = """
@@ -1674,7 +1542,8 @@ fahelp22 = """
 
 ➤ [ `.pikachu` ]
 ———————————————
-➤ [ `.whale` \n———————————————
+➤ [ `.whale` ]
+———————————————
 ➤ [ `.foxx` ]
 ———————————————
 ➤ [ `.doggg` ]
@@ -1793,1224 +1662,33 @@ fahelp24 = """
 ———————————————
 """
 
-enhelp1 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Global - Personal ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-User mute
-➤ [ `.mute` ]
-———————————————
-User unmute
-➤ [ `.unmute` ]
-———————————————
-Clear mute list
-➤ [ `.allunmute` ]
-———————————————
-User block
-➤ [ `.block` ]
-———————————————
-User unblock
-➤ [ `.unblock` ]
-———————————————
-Add User to enemy list
-➤ [ `.setenemy` ]
-———————————————
-Remove User from the enemy list
-➤ [ `.delenemy` ]
-———————————————
-Clear enemy list
-➤ [ `.clearenemy` ]
-———————————————
-Add User to love list
-➤ [ `.setlove` ]
-———————————————
-Remove User from the love list
-➤ [ `.dellove` ]
-———————————————
-Clear love list
-➤ [ `.clearlove` ]
-———————————————
-Set Auto monshi text
-➤ [ `.monshi` ] **⤳** (TEXT)
-———————————————
-Disable Auto monshi
-➤ [ `.monshioff` ]
-———————————————
-Set Offline mode text
-➤ [ `.afk` ] **⤳** (TEXT)
-———————————————
-Disable Offline mode
-➤ [ `.unafk` ]
-———————————————
-Receive Tagalert
-➤ [ `.tagalert` ] **⤳** (on OR off)
-———————————————
-Create Channel
-➤ [ `.creatchannel` ] **⤳** (Name)
-———————————————
-Create Group
-➤ [ `.creatgroup` ] **⤳** (Name)
-———————————————
-Create Supergroup
-➤ [ `.creatsupergroup` ] **⤳** (Name)
-———————————————
-Normal Spam text
-➤ [ `.spam` ] **⤳** (NUM TEXT)
-———————————————
-Slow Spam text
-➤ [ `.slowspam` ] **⤳** (NUM TEXT)
-———————————————
-Spam Text and delete
-➤ [ `.statspam` ] **⤳** (NUM TEXT)
-———————————————
-Fast Spam text
-➤ [ `.fastspam` ] **⤳** (NUM TEXT)
-———————————————
-Enable first comment
-➤ [ `.firstcom` ] **⤳** (on OR off)
-———————————————
-Set first comment text
-➤ [ `.first_message` ] **⤳** (TEXT) (Reply)
-———————————————
-Set time for Auto send text
-➤ [ `.text_time` ] **⤳** (HH:MM)
-———————————————
-Set time for Auto send photo
-➤ [ `.photo_time` ] **⤳** (HH:MM)
-———————————————
-Set Text for Auto send text
-➤ [ `.text_send_time` ] **⤳** (TEXT) (Reply)
-———————————————
-Set Photo for Auto send photo
-➤ [ `.photo_send_time` ] **⤳** (Reply)
-———————————————
-Auto answer
-➤ [ `.answer` ] **⤳** (on OR off)
-———————————————
-Set Question and Answer for Auto answer
-➤ [ `.addan` ] **⤳** (Question:Answer)
-———————————————
-Delete an answer
-➤ [ `.delan` ] **⤳** (Answer)
-———————————————
-Answer list
-➤ [ `.anlist` ]
-———————————————
-Clear Auto answer list
-➤ [ `.anclear` ]
-———————————————
-Welcome Mode
-➤ [ `.welcome` ] **⤳** (on OR off)
-———————————————
-Set Welcome text
-➤ [ `.welcome_add` ] **⤳** (TEXT)
-———————————————
-Show Welcome text
-➤ [ `.welcome_show` ]
-———————————————
-Reset Welcome text
-➤ [ `.welcome_reset` ]
-———————————————
-**Attention! To use the following commands, you must be the owner or administrator of the desired group with the necessary permissions**
+# English help texts (brief versions)
+enhelp1 = fahelp1.replace("**[ سراسری - شخصی ]**", "**[ Global - Personal ]**")
+enhelp2 = fahelp2.replace("**[ پروفایل ]**", "**[ Profile ]**")
+enhelp3 = fahelp3.replace("**[ دانلودر ]**", "**[ Downloader ]**")
+enhelp4 = fahelp4.replace("**[ آپلودر ]**", "**[ Uploader ]**")
+enhelp5 = fahelp5.replace("**[ حالت متن ]**", "**[ Text Mode ]**")
+enhelp6 = fahelp6.replace("**[ حالت اکشن ]**", "**[ Action Mode ]**")
+enhelp7 = fahelp7.replace("**[ وبهوک ]**", "**[ Webhook ]**")
+enhelp8 = fahelp8.replace("**[ قفل ها ]**", "**[ Locks ]**")
+enhelp9 = fahelp9.replace("**[ کرون جاب ]**", "**[ Cron Job ]**")
+enhelp10 = fahelp10.replace("**[ آنتی لاگین ]**", "**[ Anti Login ]**")
+enhelp11 = fahelp11.replace("**[ تبچی ]**", "**[ Tabchi ]**")
+enhelp12 = fahelp12.replace("**[ ویرایشگر عکس ]**", "**[ Photo Editor ]**")
+enhelp13 = fahelp13.replace("**[ گیف و لوگو ساز ]**", "**[ GIF & Logo Maker ]**")
+enhelp14 = fahelp14.replace("**[ کامپایلر ]**", "**[ Compiler ]**")
+enhelp15 = fahelp15.replace("**[ ابزار ها ]**", "**[ Tools ]**")
+enhelp16 = fahelp16.replace("**[ اکانت ]**", "**[ Account ]**")
+enhelp17 = fahelp17.replace("**[ کتاب ]**", "**[ Book ]**")
+enhelp18 = fahelp18.replace("**[ سرگرمی ]**", "**[ Fun ]**")
+enhelp19 = fahelp19.replace("**[ بازار ]**", "**[ Market ]**")
+enhelp20 = fahelp20.replace("**[ استیکر - گیف ]**", "**[ Sticker - GIF ]**")
+enhelp21 = fahelp21.replace("**[ هوش مصنوعی ]**", "**[ AI ]**")
+enhelp22 = fahelp22.replace("**[ عکس ]**", "**[ Photo ]**")
+enhelp23 = fahelp23.replace("**[ موزیک ]**", "**[ Music ]**")
+enhelp24 = fahelp24.replace("**[ تنظیمات سیستم ]**", "**[ System ]**")
 
-Ban a User in the group
-➤ [ `.ban` ] **⤳** (ID) (Reply)
-———————————————
-Unban a User in the group
-➤ [ `.unban` ] **⤳** (ID) (Reply)
-———————————————
-Mute a User in the group
-➤ [ `.setmute` ] **⤳** (ID) (Reply)
-———————————————
-Unmute a User in the group
-➤ [ `.delmute` ] **⤳** (ID) (Reply)
-———————————————
-Set Chat photo
-➤ [ `.setchatphoto` ] **⤳** (Reply)
-———————————————
-Set Chat title
-➤ [ `.setchattitle` ] **⤳** (TEXT)
-———————————————
-Set Chat bio
-➤ [ `.setchatbio` ] **⤳** (TEXT)
-———————————————
-Set Chat Username
-➤ [ `.setchatusername` ] **⤳** (Username)
-———————————————
-Pin a Message in the group
-➤ [ `.pin` ] **⤳** (Reply)
-———————————————
-Unpin a Message in the group
-➤ [ `.unpin` ] **⤳** (Reply)
-———————————————
-Unpin All messages
-➤ [ `.unpinall` ]
-———————————————
-Delete Channel
-➤ [ `.deletechannel` ] **⤳** (Username)
-———————————————
-Delete Group
-➤ [ `.deletegroup` ] **⤳** (Username)
-———————————————
-Delete All messages from a User in the group
-➤ [ `.delallmsguser` ] **⤳** (Reply)
-———————————————
-Set time between sending each message for group members (Second)
-➤ [ `.slowmod` ] **⤳** (NUM)
-———————————————
-Delete some messages
-➤ [ `.delete` ] **⤳** (NUM)
-———————————————
-Tag Group admins
-➤ [ `.tadmin` ]
-———————————————
-Tag All members group
-➤ [ `.tagall` ] **⤳** (TEXT) (Reply)
-———————————————
-Cancel Group members tag
-➤ [ `.cancel` ]
-———————————————
-Clear history
-➤ [ `.delethistory` ]
-———————————————
-Delete a message
-➤ [ `.del` ] **⤳** (Reply)
-———————————————
-"""
-
-enhelp2 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Profile ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Set Account name
-➤ [ `.setname` ]
-———————————————
-Set Account lastname
-➤ [ `.setlastname` ]
-———————————————
-Set Account bio
-➤ [ `.setbio` ]
-———————————————
-Auto Font name
-➤ [ `.fontname` ] **⤳** (on OR off)
-———————————————
-Set Time name
-➤ [ `.timename` ] **⤳** (on OR off)
-———————————————
-Set Time name 2
-➤ [ `.2timename` ] **⤳** (on OR off)
-———————————————
-Set Time bio
-➤ [ `.timebio` ] **⤳** (on OR off)
-———————————————
-Set Time bio 2
-➤ [ `.2timebio` ] **⤳** (on OR off)
-———————————————
-Set Time bio 3
-➤ [ `.3timebio` ] **⤳** (on OR off)
-———————————————
-Set Time bio 4
-➤ [ `.4timebio` ] **⤳** (on OR off)
-———————————————
-Set Time bio 5
-➤ [ `.5timebio` ] **⤳** (on OR off)
-———————————————
-Set Time bio 6
-➤ [ `.6timebio` ] **⤳** (on OR off)
-———————————————
-Set Account profile photo
-➤ [ `.setprofile` ] **⤳** (Reply)
-———————————————
-Delete Account profile photo
-➤ [ `.delprofile` ]
-———————————————
-Set Time on profile photo
-➤ [ `.autopic` ]
-———————————————
-Set Time on profile photo 2
-➤ [ `.2autopic` ]
-———————————————
-Set Time on profile photo 3
-➤ [ `.3autopic` ]
-———————————————
-Set Time on profile photo 4
-➤ [ `.4autopic` ]
-———————————————
-"""
-
-enhelp3 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Downloader ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Get Instagram page information
-➤ [ `.iginfo` ] **⤳** (Username)
-———————————————
-Download from Instagram
-➤ [ `.igdl` ] **⤳** (URL)
-———————————————
-Download from Instagram, YouTube, Facebook & TikTok
-➤ [ `.down` ] **⤳** (URL)
-———————————————
-Search and download from YouTube with text
-➤ [ `.youtube` ] **⤳** (TEXT)
-———————————————
-Application Search
-➤ [ `.app` ] **⤳** (TEXT)
-———————————————
-Application Search 2
-➤ [ `.apk` ] **⤳** (TEXT)
-———————————————
-"""
-
-enhelp4 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Uploader ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Upload Text
-➤ [ `.neko` ] **⤳** (Reply)
-———————————————
-Upload Photo
-➤ [ `.telegraph` ] **⤳** (Reply)
-———————————————
-"""
-
-enhelp5 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Text Mode ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Bold Mode
-➤ [ `.bold` ] **⤳** (on OR off)
-———————————————
-Spoiler Mode
-➤ [ `.spoiler` ] **⤳** (on OR off)
-———————————————
-Italic Mode
-➤ [ `.italic` ] **⤳** (on OR off)
-———————————————
-Code Mode
-➤ [ `.code` ] **⤳** (on OR off)
-———————————————
-Underline Mode
-➤ [ `.underline` ] **⤳** (on OR off)
-———————————————
-Strike Mode
-➤ [ `.strike` ] **⤳** (on OR off)
-———————————————
-Emoji Mode
-➤ [ `.emoji` ] **⤳** (on OR off)
-———————————————
-Quote Mode
-➤ [ `.quote` ] **⤳** (on OR off)
-———————————————
-Mention Mode
-➤ [ `.mention` ] **⤳** (on OR off)
-———————————————
-Set Reaction
-➤ [ `.setreact` ] **⤳** (Emoji) (Reply)
-———————————————
-Delete Reaction
-➤ [ `.delreact` ] **⤳** (Reply)
-———————————————
-Reaction List
-➤ [ `.reactlist` ]
-———————————————
-Send ladder text
-➤ [ `.lad` ] **⤳** (TEXT)
-———————————————
-"""
-
-enhelp6 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Action Mode ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Typing Mode
-➤ [ `.typing` ] **⤳** (on OR off)
-———————————————
-Playing Mode
-➤ [ `.playing` ] **⤳** (on OR off)
-———————————————
-Recording Mode
-➤ [ `.record_vid` ] **⤳** (on OR off)
-———————————————
-Sticker Selection Mode
-➤ [ `.choose_sticker` ] **⤳** (on OR off)
-———————————————
-Video Uploading Mode
-➤ [ `.upload_vid` ] **⤳** (on OR off)
-———————————————
-Document Uploading Mode
-➤ [ `.upload_doc` ] **⤳** (on OR off)
-———————————————
-Audio Uploading Mode
-➤ [ `.upload_audio` ] **⤳** (on OR off)
-———————————————
-Speaking Mode
-➤ [ `.speaking` ] **⤳** (on OR off)
-———————————————
-Account Online Mode
-➤ [ `.online` ] **⤳** (on OR off)
-———————————————
-Account Offline Mode
-➤ [ `.offline` ] **⤳** (on OR off)
-———————————————
-"""
-
-enhelp7 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Webhook ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Set Webhook
-➤ [ `.setwebhook` ] **⤳** (Token URL)
-———————————————
-Delete Webhook
-➤ [ `.delwebhook` ] **⤳** (Token)
-———————————————
-Clear Pending Updates
-➤ [ `.delupdate` ] **⤳** (Token)
-———————————————
-Get Webhook information
-➤ [ `.webhookinfo` ] **⤳** (Token)
-———————————————
-Get Bot information
-➤ [ `.botinfo` ] **⤳** (Token)
-———————————————
-"""
-
-enhelp8 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Locks ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-PV Lock Mode
-➤ [ `.pvlock` ] **⤳** (on OR off)
-———————————————
-Mandatory join
-➤ [ `.monshi2` ] **⤳** (on OR off)
-———————————————
-Lock Name list
-➤ [ `.hlock` ]
-———————————————
-Group Lock status
-➤ [ `.locks` ]
-———————————————
-Lock a option
-➤ [ `.lock` ] **⤳** (Name)
-———————————————
-Unlock a option
-➤ [ `.unlock` ] **⤳** (Name)
-———————————————
-Lock All options
-➤ [ `.lock all` ]
-———————————————
-Unlock All options
-➤ [ `.unlock all` ]
-———————————————
-"""
-
-enhelp9 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Cron Job ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Set Cron Job (Minute)
-➤ [ `.cron` ] **⤳** (URL Time)
-Time: 1, 2, 5, 10, 15, 30 ...
-———————————————
-"""
-
-enhelp10 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Anti Login ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Anti Login Account
-➤ [ `.antilog` ] **⤳** (on OR off)
-———————————————
-"""
-
-enhelp11 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Tabchi ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Tabchi Status
-➤ [ `.tabchi status` ]
-———————————————
-Auto Send to PVs
-➤ [ `.tabchipv` ] **⤳** (on OR off)
-———————————————
-Auto Send to Groups
-➤ [ `.tabchigp` ] **⤳** (on OR off)
-———————————————
-Set Banner for Auto Send to PVs
-➤ [ `.setbannerpv` ] **⤳** (TEXT) (Reply)
-———————————————
-Set Banner for Auto Send to Groups
-➤ [ `.setbannergp` ] **⤳** (TEXT) (Reply)
-———————————————
-Set Timer for Auto Send to PVs (Second)
-➤ [ `.settimerpv` ] **⤳** (NUM)
-———————————————
-Set Timer for Auto Send to Groups (Second)
-➤ [ `.settimergp` ] **⤳** (NUM)
-———————————————
-Send to PVs
-➤ [ `.sendpv` ] **⤳** (TEXT) (Reply)
-———————————————
-Send to Groups
-➤ [ `.sendgp` ] **⤳** (TEXT) (Reply)
-———————————————
-Set Banner for Send to Group members
-➤ [ `.setbannersender` ] **⤳** (TEXT) (Reply)
-———————————————
-Send to Group membes
-➤ [ `.sendall` ] **⤳** (Username)
-———————————————
-Get the group invitation link
-➤ [ `.invitelink` ]
-———————————————
-Join the Group
-➤ [ `.join` ] **⤳** (Link)
-———————————————
-Leave the Group
-➤ [ `.leave` ] **⤳** (Link)
-———————————————
-Leave All Groups
-➤ [ `.leaveallgc` ]
-———————————————
-Leave All Channels
-➤ [ `.leaveallch` ]
-———————————————
-"""
-
-enhelp12 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Photo Editor ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**With the following commands, you can design the text you want on the photo**
-
-➤ [ `.kanna` ] **⤳** (TEXT)
-———————————————
-➤ [ `.clyde` ] **⤳** (TEXT)
-———————————————
-➤ [ `.write` ] **⤳** (TEXT)
-———————————————
-➤ [ `.mind` ] **⤳** (TEXT)
-———————————————
-➤ [ `.trump` ] **⤳** (TEXT)
-———————————————
-➤ [ `.o` ] **⤳** (TEXT)
-———————————————
-➤ [ `.o2` ] **⤳** (TEXT)
-———————————————
-➤ [ `.bish` ] **⤳** (TEXT)
-———————————————
-➤ [ `.latex` ] **⤳** (TEXT)
-———————————————
-**With the following commands, you can set different filters on the photo you want**
-
-➤ [ `.blue` ] **⤳** (Reply)
-———————————————
-➤ [ `.green` ] **⤳** (Reply)
-———————————————
-➤ [ `.red` ] **⤳** (Reply)
-———————————————
-➤ [ `.grey` ] **⤳** (Reply)
-———————————————
-➤ [ `.grey2` ] **⤳** (Reply)
-———————————————
-➤ [ `.sepia` ] **⤳** (Reply)
-———————————————
-➤ [ `.threshold` ] **⤳** (Reply)
-———————————————
-➤ [ `.blurple` ] **⤳** (Reply)
-———————————————
-➤ [ `.filter` ] **⤳** (Reply)
-———————————————
-**With the following commands, you can change the style and dimensions of the photo you want**
-
-➤ [ `.bisexual` ] **⤳** (Reply)
-———————————————
-➤ [ `.blur` ] **⤳** (Reply)
-———————————————
-➤ [ `.horny` ] **⤳** (Reply)
-———————————————
-➤ [ `.stupid` ] **⤳** (Reply)
-———————————————
-➤ [ `.lesbian` ] **⤳** (Reply)
-———————————————
-➤ [ `.lgbt` ] **⤳** (Reply)
-———————————————
-➤ [ `.lolice` ] **⤳** (Reply)
-———————————————
-➤ [ `.non` ] **⤳** (Reply)
-———————————————
-➤ [ `.psexual` ] **⤳** (Reply)
-———————————————
-➤ [ `.pixel` ] **⤳** (Reply)
-———————————————
-➤ [ `.simp` ] **⤳** (Reply)
-———————————————
-➤ [ `.spin` ] **⤳** (Reply)
-———————————————
-➤ [ `.toni` ] **⤳** (Reply)
-———————————————
-**With the commands below, you can apply filters and fun changes to your desired photo**
-
-➤ [ `.comrade` ] **⤳** (Reply)
-———————————————
-➤ [ `.gay` ] **⤳** (Reply)
-———————————————
-➤ [ `.glass` ] **⤳** (Reply)
-———————————————
-➤ [ `.jail` ] **⤳** (Reply)
-———————————————
-➤ [ `.wasted` ] **⤳** (Reply)
-———————————————
-➤ [ `.pass` ] **⤳** (Reply)
-———————————————
-"""
-
-enhelp13 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ L - G Marker ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Create logo with text
-➤ [ `.logo` ] **⤳** (TEXT)
-———————————————
-Create logo with text 2
-➤ [ `.logo2` ] **⤳** (TEXT)
-———————————————
-Create logo with the desired text and design
-➤ [ `.lg` ] **⤳** (TEXT Mode)
-Mode: 1-138
-———————————————
-Create Gif with text
-➤ [ `.gif` ] **⤳** (TEXT)
-———————————————
-Create Gif with text 2
-➤ [ `.giff` ] **⤳** (TEXT)
-———————————————
-"""
-
-enhelp14 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Compiler ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-➤ [ `.py` ] **⤳** (Code) (Reply)
-———————————————
-➤ [ `.js` ] **⤳** (Code) (Reply)
-———————————————
-➤ [ `.php` ] **⤳** (Code) (Reply)
-———————————————
-➤ [ `.kotlin` ] **⤳** (Code) (Reply)
-———————————————
-➤ [ `.go` ] **⤳** (Code) (Reply)
-———————————————
-➤ [ `.java` ] **⤳** (Code) (Reply)
-———————————————
-➤ [ `.lua` ] **⤳** (Code) (Reply)
-———————————————
-➤ [ `.exec` ] **⤳** (Code)
-———————————————
-"""
-
-enhelp15 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Tools ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-File Extraction
-➤ [ `.unzip` ] **⤳** (Reply)
-———————————————
-Rename the file
-➤ [ `.rname` ] **⤳** (TEXT) (Reply)
-———————————————
-Virtual number Checker
-➤ [ `.check` ] **⤳** (Number)
-———————————————
-Screenshot of the text
-➤ [ `.q` ] **⤳** (Reply)
-———————————————
-Screenshot of the desired text
-➤ [ `.qq` ] **⤳** (TEXT)
-———————————————
-Results of Cricket matches
-➤ [ `.cricket` ] **⤳**
-———————————————
-Weather
-➤ [ `.weather` ] **⤳** (City Name)
-———————————————
-Azan time
-➤ [ `.azan` ] **⤳** (City Name)
-———————————————
-Temperature Converter
-➤ [ `.t` ] **⤳** (NUM c OR f)
-eg: .t 25 c
-———————————————
-Digital Currency Converter
-➤ [ `.c` ] **⤳** (NUM Currency1 Currency2)
-eg: .c 100 usdt eur
-———————————————
-Calculator
-➤ [ `.e` ] **⤳** (Match)
-eg: .e 2+2
-———————————————
-Get the IP of the site
-➤ [ `.ip` ] **⤳** (Domain)
-———————————————
-Get IP information
-➤ [ `.whoisip` ] **⤳** (IP)
-———————————————
-Link Shortener
-➤ [ `.link` ] **⤳** (URL)
-———————————————
-Link Shortener 2
-➤ [ `.link2` ] **⤳** (URL)
-———————————————
-Get site ping
-➤ [ `.p` ] **⤳** (Domain)
-———————————————
-Screenshot of the site
-➤ [ `.screenshot` ] **⤳** (Domain)
-———————————————
-Screenshot of the site 2
-➤ [ `.screenshot2` ] **⤳** (Domain)
-———————————————
-Screenshot of the site 3
-➤ [ `.screenshot3` ] **⤳** (Domain)
-———————————————
-Screenshot of the site 4
-➤ [ `.screenshot4` ] **⤳** (Domain)
-———————————————
-Screenshot of the site 5
-➤ [ `.shot` ] **⤳** (Domain)
-———————————————
-Get GitHub Account information
-➤ [ `.github` ] **⤳** (Username)
-———————————————
-Get Project information
-➤ [ `.git` ] **⤳** (TEXT)
-———————————————
-Search in the dictionary
-➤ [ `.dict` ] **⤳** (Word)
-———————————————
-Copy the profile of an account
-➤ [ `.clone` ] **⤳** (ID) (Reply)
-———————————————
-Account Creation date
-➤ [ `.i` ] **⤳** (ID) (Reply)
-———————————————
-Self Account Creation date
-➤ [ `.creation` ]
-———————————————
-Self Account limit status
-➤ [ `.limit` ]
-———————————————
-Get Country information
-➤ [ `.country` ] **⤳** (Name)
-———————————————
-Convert Sticker to Photo
-➤ [ `.tp` ] **⤳** (Reply)
-———————————————
-Convert Photo to Sticker
-➤ [ `.ts` ] **⤳** (Reply)
-———————————————
-Create Gif
-➤ [ `.tg` ] **⤳** (Reply)
-———————————————
-Translate to Persian
-➤ [ `.fa` ] **⤳** (TEXT)
-———————————————
-Translate to English
-➤ [ `.en` ] **⤳** (TEXT)
-———————————————
-Get the movie
-➤ [ `.movie` ] **⤳** (TEXT)
-———————————————
-Get Anime
-➤ [ `.anim` ] **⤳** (TEXT)
-———————————————
-Create Password with the desired number of characters
-➤ [ `.pass` ] **⤳** (NUM)
-———————————————
-Convert text to Morse code
-➤ [ `.morset` ] **⤳** (TEXT)
-———————————————
-Convert Morse code to text
-➤ [ `.unmorset` ] **⤳** (Code)
-———————————————
-Get the date
-➤ [ `.date` ]
-———————————————
-Get Account information
-➤ [ `.id` ] **⤳** (ID) (Reply)
-———————————————
-Get Message information
-➤ [ `.get_message` ] **⤳** (Reply)
-———————————————
-Mention a User
-➤ [ `.mention` ] **⤳** (ID) (Reply)
-———————————————
-National code Check
-➤ [ `.meli` ] **⤳** (Number)
-———————————————
-Check bank card
-➤ [ `.estelam` ] **⤳** (Number)
-———————————————
-Get daily News
-➤ [ `.news` ] **⤳** (Category)
-Category: business, entertainment, general, health, science, sports, technology
-———————————————
-Get Bin card
-➤ [ `.ccgen` ]
-———————————————
-Get daily News
-➤ [ `.yjc` ]
-———————————————
-Extract Text from Photo
-➤ [ `.ocr` ] **⤳** (Reply)
-———————————————
-Download timed Photo
-➤ [ `.dl` ] **⤳** (Reply)
-———————————————
-Saved Messages
-➤ [ `.waitt` ] **⤳** (Reply)
-———————————————
-Get the time
-➤ [ `.time` ]
-———————————————
-"""
-
-enhelp16 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Account ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Add Admin to Self
-➤ [ `.addadmin` ] **⤳** (ID) (Reply)
-———————————————
-Delete Admin from Self
-➤ [ `.deladmin` ] **⤳** (ID) (Reply)
-———————————————
-Admin list
-➤ [ `.adminlist` ]
-———————————————
-Clear Admin list
-➤ [ `.clearadminlist` ]
-———————————————
-Get Self Account ID
-➤ [ `id` ]
-———————————————
-Self Account limit status
-➤ [ `.limit` ]
-———————————————
-Self Account Creation date
-➤ [ `.creation` ]
-———————————————
-Get Self Account session information
-➤ [ `.session` ]
-———————————————
-"""
-
-enhelp17 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Book ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Get joke
-➤ [ `.joke` ]
-———————————————
-Get poem
-➤ [ `.poem` ]
-———————————————
-Get Know
-➤ [ `.know` ]
-———————————————
-Get quote
-➤ [ `.quote` ]
-———————————————
-Search on Wikipedia
-➤ [ `.wiki` ] **⤳** (TEXT)
-———————————————
-Search on Google
-➤ [ `.google` ] **⤳** (TEXT)
-———————————————
-Convert Numbers to Letters
-➤ [ `.num` ] **⤳** (NUM)
-———————————————
-Get Name information
-➤ [ `.name` ] **⤳** (Name)
-———————————————
-Get biography
-➤ [ `.bio` ]
-———————————————
-Get diary
-➤ [ `.memo` ]
-———————————————
-Get pnp
-➤ [ `.pnp` ]
-———————————————
-Get alaki
-➤ [ `.alaki` ]
-———————————————
-Get hadis
-➤ [ `.hadis` ]
-———————————————
-Get story
-➤ [ `.dastan` ]
-———————————————
-Get random name
-➤ [ `.rname` ]
-———————————————
-Get horoscope
-➤ [ `.fal` ]
-———————————————
-Get istikhara
-➤ [ `.estekhare` ]
-———————————————
-Get zekr
-➤ [ `.zekr` ]
-———————————————
-"""
-
-enhelp18 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Fun ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Cheating at dice
-➤ [ `.tas` ] **⤳** (1-6)
-———————————————
-Cheating at darts
-➤ [ `.dart` ]
-———————————————
-Cheating at bowling
-➤ [ `.bowling` ]
-———————————————
-Cheating at basketball
-➤ [ `.basketball` ]
-———————————————
-Cheating at football
-➤ [ `.football` ] **⤳** (1 OR 6)
-1: Fail
-4: Goal
-———————————————
-Get random games 1
-➤ [ `.game` ]
-———————————————
-Get random games 2
-➤ [ `.bazi` ]
-———————————————
-Get random games 3
-➤ [ `.hehe` ]
-———————————————
-**Other hobbies**
-
-➤ [ `.moon` ]
-———————————————
-➤ [ `.clock` ]
-———————————————
-➤ [ `.thunder` ]
-———————————————
-➤ [ `.earth` ]
-———————————————
-➤ [ `.heart` ]
-———————————————
-➤ [ `.love` ]
-———————————————
-➤ [ `.santet` ]
-———————————————
-➤ [ `.nah` ]
-———————————————
-➤ [ `.ajg` ]
-———————————————
-➤ [ `.babi` ]
-———————————————
-➤ [ `.tank` ]
-———————————————
-➤ [ `.y` ]
-———————————————
-➤ [ `.awk` ]
-———————————————
-➤ [ `.tembak` ]
-———————————————
-➤ [ `.heli` ]
-———————————————
-➤ [ `.gabut` ]
-———————————————
-➤ [ `.syg` ]
-———————————————
-➤ [ `.dino` ]
-———————————————
-➤ [ `.hack` ]
-———————————————
-➤ [ `.fuck` ]
-———————————————
-➤ [ `.koc` ]
-———————————————
-➤ [ `.charging` ]
-———————————————
-➤ [ `.gang` ]
-———————————————
-➤ [ `.hypo` ]
-———————————————
-➤ [ `.ding` ]
-———————————————
-➤ [ `.wtf` ]
-———————————————
-➤ [ `.call` ]
-———————————————
-➤ [ `.bomb` ]
-———————————————
-➤ [ `.brain` ]
-———————————————
-➤ [ `.ahh` ]
-———————————————
-➤ [ `.hmm` ]
-———————————————
-"""
-
-enhelp19 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Market ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-The price of goods in the Iranian market (BaSalam)
-➤ [ `.price` ] **⤳** (TEXT)
-———————————————
-The price of goods in the Iranian market (Torob)
-➤ [ `.qeymat` ] **⤳** (TEXT)
-———————————————
-Digital Currencies symbols list
-➤ [ `.cryptolist` ]
-———————————————
-Digital Currency price
-➤ [ `.crypto` ] **⤳** (Name)
-———————————————
-Digital Currency converter
-➤ [ `.c` ] **⤳** (NUM Currency1 Currency2)
-eg: .c 100 usdt eur
-———————————————
-Tron price
-➤ [ `.trx` ]
-———————————————
-Currency price list
-➤ [ `.arz` ]
-———————————————
-Check bank card
-➤ [ `.estelam` ] **⤳** (Number)
-———————————————
-Get Digital Currency transaction information
-➤ [ `.tara` ] **⤳** (TransLink)
-———————————————
-"""
-
-enhelp20 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Sticker - Gif ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Create Sticker with text
-➤ [ `.sticker` ] **⤳** (TEXT)
-———————————————
-Get Sticker information
-➤ [ `.stickerinfo` ] **⤳** (Reply)
-———————————————
-Create Sticker with error code
-➤ [ `.error` ] **⤳** (Code)
-eg: .error 404
-———————————————
-Minimize Stickers and Pictures
-➤ [ `.tiny` ] **⤳** (Reply)
-———————————————
-Convert Photo to Sticker
-➤ [ `.ts` ] **⤳** (Reply)
-———————————————
-Create Gif
-➤ [ `.tg` ] **⤳** (Reply)
-———————————————
-**Get random Gifs**
-
-➤ [ `.palm` ]
-———————————————
-➤ [ `.wink` ]
-———————————————
-➤ [ `.hug` ]
-———————————————
-➤ [ `.pat` ]
-———————————————
-"""
-
-enhelp21 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ AI ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**Textual AI**
-
-➤ [ `.gpt3` ] **⤳** (TEXT)
-———————————————
-➤ [ `.gpt4` ] **⤳** (TEXT)
-———————————————
-➤ [ `.bard` ] **⤳** (TEXT)
-———————————————
-➤ [ `.asq` ] **⤳** (TEXT)
-———————————————
-➤ [ `.messi` ] **⤳** (TEXT)
-———————————————
-➤ [ `.ronaldo` ] **⤳** (TEXT)
-———————————————
-➤ [ `.ilon` ] **⤳** (TEXT)
-———————————————
-**Audio AI**
-
-➤ [ `.` ] **⤳** (TEXT) Women
-———————————————
-➤ [ `/` ] **⤳** (TEXT) Man
-———————————————
-➤ [ `.voice` ] **⤳** (TEXT)
-———————————————
-➤ [ `.crush` ] **⤳** (TEXT)
-———————————————
-➤ [ `.wo` ] **⤳** (TEXT) Women
-———————————————
-➤ [ `.ma` ] **⤳** (TEXT) Man
-———————————————
-➤ [ `.v` ] **⤳** (TEXT)
-———————————————
-Get ID list
-➤ [ `.vl` ]
-———————————————
-Set desired accent with ID
-➤ [ `.sv` ] **⤳** (Mode)
-———————————————
-**Visual AI**
-
-➤ [ `.pgpt` ] **⤳** (TEXT)
-———————————————
-"""
-
-enhelp22 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Photo ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Create color
-➤ [ `.color` ] **⤳** (Color)
-———————————————
-**Get random photos of animals**
-
-➤ [ `.pikachu` ]
-———————————————
-➤ [ `.whale` \n———————————————
-➤ [ `.foxx` ]
-———————————————
-➤ [ `.doggg` ]
-———————————————
-➤ [ `.rpanda` ]
-———————————————
-➤ [ `.raccoon` ]
-———————————————
-➤ [ `.panda` ]
-———————————————
-➤ [ `.koala` ]
-———————————————
-➤ [ `.kangroo` ]
-———————————————
-➤ [ `.fox` ]
-———————————————
-➤ [ `.dogg` ]
-———————————————
-➤ [ `.birdd` ]
-———————————————
-➤ [ `.catt` ]
-———————————————
-➤ [ `.bird` ]
-———————————————
-➤ [ `.dog` ]
-———————————————
-➤ [ `.cat` ]
-———————————————
-➤ [ `.robo` ] **⤳** (1-999999)
-———————————————
-**Get random +18 photos**
-
-➤ [ `.couple` ]
-———————————————
-➤ [ `.ayang` ]
-———————————————
-➤ [ `.boob` ]
-———————————————
-➤ [ `.nude` ]
-———————————————
-➤ [ `.nude2` ]
-———————————————
-**Photo Search**
-
-➤ [ `.pic` ]
-———————————————
-➤ [ `.bing` ]
-———————————————
-➤ [ `.uns` ]
-———————————————
-➤ [ `.photo` ]
-———————————————
-➤ [ `.photos` ]
-———————————————
-"""
-
-enhelp23 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ Music ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**Search and download music with the following commands**
-
-➤ [ `.music` ] **⤳** (TEXT)
-———————————————
-➤ [ `.youtube` ] **⤳** (TEXT)
-———————————————
-➤ [ `.musicc` ] **⤳** (TEXT)
-———————————————
-➤ [ `.remix` ] **⤳** (TEXT)
-———————————————
-➤ [ `.demo` ] **⤳** (TEXT)
-———————————————
-➤ [ `.classic` ] **⤳** (TEXT)
-———————————————
-➤ [ `.ahang` ] **⤳** (TEXT)
-———————————————
-➤ [ `.melo` ] **⤳** (TEXT)
-———————————————
-➤ [ `.global` ] **⤳** (TEXT)
-———————————————
-"""
-
-enhelp24 = """
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-**[ System ]**
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-Self On
-[ ➤ `.on` ]
-———————————————
-Self Off
-[ ➤ `.off` ]
-———————————————
-Restart Self
-[ ➤ `.restart` ]
-———————————————
-Emergency shutdown Self
-➤ [ `.shutdown` ]
-———————————————
-Get Self ping
-➤ [ `.ping` ]
-———————————————
-Self Status
-➤ [ `self` ]
-———————————————
-Get Self stats
-➤ [ `.on_off_status` ]
-———————————————
-Processor information
-➤ [ `.cpu` ]
-———————————————
-Memory information
-➤ [ `.memory` ]
-———————————————
-System information
-➤ [ `.system-inf` ]
-———————————————
-"""
-
-#================= Keyboards (Dark Pulse) =================#
+#================= Dark Pulse Keyboards =================#
 
 openpanelbot = InlineKeyboardMarkup(
      [
@@ -3118,7 +1796,7 @@ mark2 = InlineKeyboardMarkup(
           ],
           [
                InlineKeyboardButton('𝗪𝗲𝗯𝗵𝗼𝗼𝗸',callback_data=f'webhook2-{owner}'),
-               InlineKeyboardButton('𝗟𝗼𝗰𗗄𝘀',callback_data=f'locks2-{owner}'),
+               InlineKeyboardButton('𝗟𝗼𝗰𝗸𝘀',callback_data=f'locks2-{owner}'),
                InlineKeyboardButton('𝗖𝗿𝗼𝗻 𝗝𝗼𝗯',callback_data=f'cronjob2-{owner}')
           ],
           [
@@ -3180,7 +1858,6 @@ async def answer(client, inline_query):
      AdminUser = get_data(f"SELECT * FROM adminlist WHERE id = {chat_id} LIMIT 1")
      if AdminUser is not None:
           if inline_query.query == "panel":
-               # Language selection inline with photo card
                try:
                     user = await client.get_users(chat_id)
                     card_path = await render_titan_user_card_cached(client, user)
